@@ -45,10 +45,7 @@ def main():
                 for adjacent_cell in ADJACENT_CELLS:
                     if (r + adjacent_cell[0], c + adjacent_cell[1]) in BOMB_COORDS:
                         new_num_cell.add_adjacent()
-                new_num_cell.set_val()
                 
-
-
     root.mainloop()
 
 main()
