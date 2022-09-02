@@ -36,12 +36,14 @@ def main():
     generate()
 
     for bomb_coord in BOMB_COORDS:
-        new_bomb_cell = button_types.BombCell(root, bomb_coord[0], bomb_coord[1])
+        new_bomb_cell = button_types.BombCell()
+        new_bomb_cell.create_button(root, bomb_coord[0], bomb_coord[1])
 
     for c in range(COLUMNS):
         for r in range(ROWS):
             if (r, c) not in BOMB_COORDS:
-                new_num_cell = button_types.NumCell(root, r, c)    
+                new_num_cell = button_types.NumCell()    
+                new_num_cell.create_button(root, r, c)
                 for adjacent_cell in ADJACENT_CELLS:
                     if (r + adjacent_cell[0], c + adjacent_cell[1]) in BOMB_COORDS:
                         new_num_cell.add_adjacent()
