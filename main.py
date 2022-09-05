@@ -58,18 +58,7 @@ def main():
 
     generate(root)
 
-
-                
     root.mainloop()
 
 main()
-        
-        
-        
-
-
-
-
-
-
 
