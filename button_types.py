@@ -1,6 +1,5 @@
 from tkinter import *
 from PIL import ImageTk, Image
-import button_types
 from numpy import random
 
 #types of buttons: blank, num, and bomb, reset button
@@ -13,12 +12,13 @@ ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (
 
 class Cell:
     def __init__(self):
+        self.marked = False
         self.hidden = True
         self.hidden_text = '   '
         self.button = None
         self.to_display = self.hidden_text
-        self.xpos = 0
-        self.ypos = 0
+        self.xpos = None
+        self.ypos = None
         #self.button.bind("<Button-3>", right_click())
     
     def hide(self):
@@ -35,9 +35,15 @@ class NumCell(Cell):
         self.num_bombs = 0
 
     def reveal(self):
-        self.hidden = False
-        self.to_display = self.num_bombs
-        self.button.config(text=self.to_display)
+        if self.hidden == True:
+            self.hidden = False
+            self.to_display = self.num_bombs
+            self.button.config(text=self.to_display)
+            if self.marked == self.num_bombs:
+                for cell in self.adjacent_cells:
+                    if not cell.get_marked():
+                        cell.reveal()
+        
 
     def get_adjacent(self, total_grid):
         for adjacent_cell in ADJACENT_CELLS:
@@ -52,6 +58,9 @@ class NumCell(Cell):
         self.num_bombs = len(list(filter(lambda x: isinstance(x, BombCell), self.adjacent_cells)))
         return self.num_bombs
 
+    def get_marked(self):
+        return self.marked
+
     def set_val(self):
         self.button.config(text=self.to_display)
 
@@ -63,6 +72,7 @@ class NumCell(Cell):
 
     def left_click(self):
         self.reveal()
+
 
 
 class BombCell(Cell):

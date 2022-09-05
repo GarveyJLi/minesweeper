@@ -1,4 +1,3 @@
-from hashlib import new
 from tkinter import *
 from PIL import ImageTk, Image
 import button_types
@@ -8,7 +7,7 @@ from numpy import random
 
 COLUMNS = 30
 ROWS = 20
-NUM_BOMBS = 15
+NUM_BOMBS = 100
 BOMB_COORDS = set()
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1)]
 
