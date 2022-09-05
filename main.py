@@ -39,8 +39,8 @@ def generate(frame):
     for r in range(ROWS):
         for c in range(COLUMNS):
             current_cell = total_grid[r][c]
+            current_cell.get_adjacent(total_grid)
             if isinstance(current_cell, button_types.NumCell):
-                current_cell.get_adjacent(total_grid)
                 current_cell.get_num_bombs()
 
 def reset():

@@ -21,36 +21,12 @@ class Cell:
         self.to_display = self.hidden_text
         self.xpos = None
         self.ypos = None
+        self.adjacent_cells = []
+
     
     def hide(self):
         self.hidden = True
         self.to_display = self.hidden_text
-
-    def mark(self):
-        return
-
-    def right_click(self, event):
-        if self.hidden:
-            if not self.marked:
-                self.marked = True
-                self.to_display = self.flag_image
-                self.button.config(image=self.to_display)
-
-    
-class NumCell(Cell):
-    def __init__(self):
-        super().__init__()
-        self.adjacent = 0
-        self.adjacent_cells = []
-        self.num_bombs = 0
-
-    def reveal(self):
-        if self.hidden == True:
-            self.hidden = False
-            self.to_display = self.num_bombs
-            self.button.config(text=self.to_display)
-        
-        
 
     def get_adjacent(self, total_grid):
         for adjacent_cell in ADJACENT_CELLS:
@@ -59,14 +35,44 @@ class NumCell(Cell):
                 self.adjacent_cells.append(single_cell)
             except:
                 pass
-        return
+        return self.adjacent_cells
+
+    def get_marked(self):
+        return self.marked
+
+    def get_num_marked(self):
+        return len(list(filter(self.get_marked(), self.adjacent_cells))) #typerror bool object not callable
+    
+    def toggle_mark(self):
+        if not self.marked:
+                self.marked = True
+                self.to_display = self.flag_image
+                self.button.config(image=self.to_display)
+        else:
+            self.marked = False
+            self.to_display = self.hidden_text
+            self.button.config(image=self.to_display)
+
+    def right_click(self, event):
+        if self.hidden:
+            self.toggle_mark()
+            
+
+    
+class NumCell(Cell):
+    def __init__(self):
+        super().__init__()
+        self.adjacent = 0
+        self.num_bombs = 0
+
+    def reveal(self):
+        self.hidden = False
+        self.to_display = self.num_bombs
+        self.button.config(text=self.to_display)
     
     def get_num_bombs(self):
         self.num_bombs = len(list(filter(lambda x: isinstance(x, BombCell), self.adjacent_cells)))
         return self.num_bombs
-
-    def get_marked(self):
-        return self.marked
 
     def create_button(self, frame, xpos, ypos):
         self.button = Button(frame, text=self.to_display, command=self.left_click)
@@ -76,12 +82,21 @@ class NumCell(Cell):
         self.ypos = ypos
 
     def left_click(self):
-        if self.hidden == True:
-            self.reveal()
-            if self.marked == self.num_bombs:
-                for cell in self.adjacent_cells:
-                    if not cell.get_marked():
-                        cell.left_click()
+        if not self.marked:
+            if self.hidden:
+                if self.num_bombs == 0:
+                    self.reveal()
+                    for cell in self.adjacent_cells:
+                            if not cell.get_marked():
+                                cell.left_click()
+                else:
+                    self.reveal()
+            else:
+                if self.num_bombs == self.get_num_marked():       #gotta fix this bruh
+                    for cell in self.adjacent_cells:
+                        if not cell.get_marked():
+                            cell.reveal()
+
         
         
 
@@ -104,6 +119,7 @@ class BombCell(Cell):
         self.ypos = ypos
 
     def left_click(self):
-        self.reveal()
+        if not self.marked:
+            self.reveal()
 
 
