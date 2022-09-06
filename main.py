@@ -10,6 +10,7 @@ ROWS = 20
 NUM_BOMBS = 100
 BOMB_COORDS = set()
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1)]
+BUTTON_SIZE = 20
 
 total_grid = []
 
@@ -25,6 +26,7 @@ def generate(frame):
         BOMB_COORDS.add(coord)
 
     for r in range(ROWS):
+        
         for c in range(COLUMNS):
             if (r, c) in BOMB_COORDS:
                 new_bomb_cell = button_types.BombCell()
@@ -48,11 +50,9 @@ def reset():
 
 def main():
     root=Tk()
-    root.resizable()
+    root.resizable(height=None, width=None)
 
-    button_size = 20
-
-    smiley_image = Image.open('resources/smiley.jpg').resize((button_size, button_size))
+    smiley_image = Image.open('resources/smiley.jpg').resize((BUTTON_SIZE, BUTTON_SIZE))
     smiley_image = ImageTk.PhotoImage(smiley_image)
     #new_game_button = Button(root, image=smiley_image, height=button_size, width=button_size).grid(row=0, column=0)
 

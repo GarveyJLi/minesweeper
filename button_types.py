@@ -6,7 +6,8 @@ from numpy import random
 #types of button images: blank, num, bomb, flag, clicked blank, wrong flag, exploded bomb, uncovered
 
 
-BUTTON_SIZE = 20
+IMAGE_SIZE = 18
+BUTTON_SIZE = 2
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
     (-1, 0), (0, -1), (1, -1), (-1, 1)]
 
@@ -14,7 +15,7 @@ ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
 class Cell:
     def __init__(self):
         self.flag_image = Image.open('resources/flag.png').resize\
-            ((BUTTON_SIZE, BUTTON_SIZE))
+            ((IMAGE_SIZE, IMAGE_SIZE))
         self.flag_image = ImageTk.PhotoImage(self.flag_image)
         self.marked = False
         self.hidden = True
@@ -24,6 +25,7 @@ class Cell:
         self.xpos = None
         self.ypos = None
         self.adjacent_cells = []
+        self.button_frame = None
 
     
     def hide(self):
@@ -51,11 +53,11 @@ class Cell:
         if not self.marked:
                 self.marked = True
                 self.to_display = self.flag_image
-                self.button.config(text=None, image=self.to_display)
+                self.button.config(text='', image=self.to_display)
         else:
             self.marked = False
             self.to_display = self.hidden_text
-            self.button.config(text=self.to_display, image=None)
+            self.button.config(text=self.to_display, image='')
 
     def right_click(self, event):
         if self.hidden:
@@ -87,10 +89,16 @@ class NumCell(Cell):
         return self.num_bombs
 
     def create_button(self, frame, xpos, ypos):
+        #self.button_frame = Frame(frame)
+        #self.button_frame.grid(row=xpos, column=ypos)
         self.button = Button(frame, text=self.to_display, \
-            command=self.left_click)
-        self.button.bind("<Button-3>", self.right_click)
-        self.button.grid(row=xpos, column=ypos, sticky="ew")
+            command=self.left_click, width=BUTTON_SIZE)
+        """self.button.bind("<Button-3>", self.right_click)
+        self.button_frame.grid_propagate(False) #disables resizing of frame
+        self.button_frame.columnconfigure(ypos, weight=1) #enables button to fill frame
+        self.button_frame.rowconfigure(xpos,weight=1) #any positive number would do the trick
+        self.button.pack(height=BUTTON_SIZE, width=BUTTON_SIZE)"""
+        self.button.grid(row=xpos, column=ypos)
         self.xpos = xpos
         self.ypos = ypos
 
@@ -121,7 +129,7 @@ class BombCell(Cell):
     def __init__(self):
         super().__init__()
         self.bomb_image = Image.open('resources/bomb.png').resize\
-            ((BUTTON_SIZE, BUTTON_SIZE))
+            ((IMAGE_SIZE, IMAGE_SIZE))
         self.bomb_image = ImageTk.PhotoImage(self.bomb_image)
 
     def reveal(self):
@@ -130,10 +138,16 @@ class BombCell(Cell):
         self.button.config(text=None, image=self.to_display)
     
     def create_button(self, frame, xpos, ypos):
-        self.button = Button(frame, text=self.to_display, \
+        #self.button_frame = Frame(frame)
+        #self.button_frame.grid(row=xpos, column=ypos)
+        self.button = Button(self.button_frame, text=self.to_display, \
             command=self.left_click)
         self.button.bind("<Button-3>", self.right_click)
-        self.button.grid(row=xpos, column=ypos, sticky="ew")
+        """self.button_frame.grid_propagate(False) #disables resizing of frame
+        self.button_frame.columnconfigure(ypos, weight=1) #enables button to fill frame
+        self.button_frame.rowconfigure(xpos,weight=1) #any positive number would do the trick
+        self.button.pack(height=BUTTON_SIZE, width=BUTTON_SIZE)"""
+        self.button.grid(row=xpos, column=ypos, sticky="nsew")
         self.xpos = xpos
         self.ypos = ypos
 
