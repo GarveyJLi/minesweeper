@@ -30,12 +30,11 @@ def generate(frame):
         for c in range(COLUMNS):
             if (r, c) in BOMB_COORDS:
                 new_bomb_cell = button_types.BombCell()
-                new_bomb_cell.create_button(frame, r, c)
+                new_bomb_cell.create_button(frame, r, c, BOMB_COORDS, total_grid)
                 total_grid[r][c] = new_bomb_cell
             else:
                 new_num_cell = button_types.NumCell()    
                 new_num_cell.create_button(frame, r, c)
-                new_num_cell.get_adjacent
                 total_grid[r][c] = new_num_cell
 
     for r in range(ROWS):
@@ -52,11 +51,14 @@ def main():
     root=Tk()
     root.resizable(height=None, width=None)
 
+    cell_frame = Frame(root)
+    cell_frame.grid(row=1, column=0)
+
     smiley_image = Image.open('resources/smiley.jpg').resize((BUTTON_SIZE, BUTTON_SIZE))
     smiley_image = ImageTk.PhotoImage(smiley_image)
     #new_game_button = Button(root, image=smiley_image, height=button_size, width=button_size).grid(row=0, column=0)
 
-    generate(root)
+    generate(cell_frame)
 
     root.mainloop()
 

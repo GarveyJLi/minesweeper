@@ -10,6 +10,7 @@ IMAGE_SIZE = 18
 BUTTON_SIZE = 2
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
     (-1, 0), (0, -1), (1, -1), (-1, 1)]
+marked_cells = []
 
 
 class Cell:
@@ -17,6 +18,10 @@ class Cell:
         self.flag_image = Image.open('resources/flag.png').resize\
             ((IMAGE_SIZE, IMAGE_SIZE))
         self.flag_image = ImageTk.PhotoImage(self.flag_image)
+        self.bad_mark = Image.open('resources/bad_mark.png').resize\
+            ((IMAGE_SIZE, IMAGE_SIZE))
+        self.bad_mark = ImageTk.PhotoImage(self.bad_mark)
+        
         self.marked = False
         self.hidden = True
         self.hidden_text = '   '
@@ -53,17 +58,19 @@ class Cell:
         if not self.marked:
                 self.marked = True
                 self.to_display = self.flag_image
-                self.button.config(text='', image=self.to_display)
+                self.button.config(text=self.hidden_text, image=self.to_display)
+                marked_cells.append((self.xpos, self.ypos))
         else:
             self.marked = False
             self.to_display = self.hidden_text
             self.button.config(text=self.to_display, image='')
+            marked_cells.remove((self.xpos, self.ypos))
 
     def right_click(self, event):
         if self.hidden:
             self.toggle_mark()
         else:
-            if self.num_bombs == self.get_num_marked():#gotta fix this bruh
+            if self.num_bombs == self.get_num_marked():
                     for cell in self.adjacent_cells:
                         if not cell.get_marked():
                             if cell.get_num_bombs == 0:
@@ -93,11 +100,7 @@ class NumCell(Cell):
         #self.button_frame.grid(row=xpos, column=ypos)
         self.button = Button(frame, text=self.to_display, \
             command=self.left_click, width=BUTTON_SIZE)
-        """self.button.bind("<Button-3>", self.right_click)
-        self.button_frame.grid_propagate(False) #disables resizing of frame
-        self.button_frame.columnconfigure(ypos, weight=1) #enables button to fill frame
-        self.button_frame.rowconfigure(xpos,weight=1) #any positive number would do the trick
-        self.button.pack(height=BUTTON_SIZE, width=BUTTON_SIZE)"""
+        self.button.bind("<Button-3>", self.right_click)
         self.button.grid(row=xpos, column=ypos)
         self.xpos = xpos
         self.ypos = ypos
@@ -112,47 +115,45 @@ class NumCell(Cell):
                             cell.left_click()
                 else:
                     self.reveal()
-            """else:
-                if self.num_bombs == self.get_num_marked():#gotta fix this bruh
-                    for cell in self.adjacent_cells:
-                        if not cell.get_marked():
-                            if cell.get_num_bombs == 0:
-                                cell.left_click()
-                            else:
-                                cell.reveal()"""
             
-
-        
-        
-
 class BombCell(Cell):
     def __init__(self):
         super().__init__()
         self.bomb_image = Image.open('resources/bomb.png').resize\
             ((IMAGE_SIZE, IMAGE_SIZE))
         self.bomb_image = ImageTk.PhotoImage(self.bomb_image)
+        self.red_bomb = Image.open('resources/red_bomb.png').resize\
+            ((IMAGE_SIZE, IMAGE_SIZE))
+        self.red_bomb = ImageTk.PhotoImage(self.red_bomb)
+        self.all_bombs = set()
+        self.total_grid = None
+        
 
     def reveal(self):
         self.hidden = False
         self.to_display=self.bomb_image
         self.button.config(text=None, image=self.to_display)
     
-    def create_button(self, frame, xpos, ypos):
-        #self.button_frame = Frame(frame)
-        #self.button_frame.grid(row=xpos, column=ypos)
-        self.button = Button(self.button_frame, text=self.to_display, \
+    def create_button(self, frame, xpos, ypos, all_bombs, total_grid):
+        self.button = Button(frame, text=self.to_display, \
             command=self.left_click)
         self.button.bind("<Button-3>", self.right_click)
-        """self.button_frame.grid_propagate(False) #disables resizing of frame
-        self.button_frame.columnconfigure(ypos, weight=1) #enables button to fill frame
-        self.button_frame.rowconfigure(xpos,weight=1) #any positive number would do the trick
-        self.button.pack(height=BUTTON_SIZE, width=BUTTON_SIZE)"""
         self.button.grid(row=xpos, column=ypos, sticky="nsew")
         self.xpos = xpos
         self.ypos = ypos
+        self.all_bombs = all_bombs
+        self.total_grid = total_grid
 
     def left_click(self):
         if not self.marked:
-            self.reveal()
+            self.hidden = False
+            self.button.config(image=self.red_bomb)
+            for bomb in self.all_bombs:
+                if bomb != (self.xpos, self.ypos):
+                    self.total_grid[bomb[0]][bomb[1]].reveal()
+            for marked in marked_cells:
+                marked_cell = self.total_grid[marked[0]][marked[1]]
+                if isinstance(marked_cell, BombCell):
+                    marked_cell.config(image=self.bad_mark)
 
 
