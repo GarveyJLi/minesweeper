@@ -26,7 +26,6 @@ def generate(frame):
         BOMB_COORDS.add(coord)
 
     for r in range(ROWS):
-        
         for c in range(COLUMNS):
             if (r, c) in BOMB_COORDS:
                 new_bomb_cell = button_types.BombCell()

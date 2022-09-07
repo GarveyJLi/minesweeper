@@ -1,4 +1,5 @@
 from tkinter import *
+from turtle import width
 from PIL import ImageTk, Image
 from numpy import random
 
@@ -58,12 +59,12 @@ class Cell:
         if not self.marked:
                 self.marked = True
                 self.to_display = self.flag_image
-                self.button.config(text=self.hidden_text, image=self.to_display)
+                self.button.config(text=self.hidden_text, image=self.to_display, width=IMAGE_SIZE)
                 marked_cells.append((self.xpos, self.ypos))
         else:
             self.marked = False
             self.to_display = self.hidden_text
-            self.button.config(text=self.to_display, image='')
+            self.button.config(text=self.to_display, image='', width=BUTTON_SIZE)
             marked_cells.remove((self.xpos, self.ypos))
 
     def right_click(self, event):
@@ -71,12 +72,13 @@ class Cell:
             self.toggle_mark()
         else:
             if self.num_bombs == self.get_num_marked():
-                    for cell in self.adjacent_cells:
-                        if not cell.get_marked():
-                            if cell.get_num_bombs == 0:
+                for cell in self.adjacent_cells:
+                    if not cell.get_marked():
+                        if isinstance(self, NumCell):
+                            if cell.get_num_bombs() == 0:
                                 cell.left_click()
-                            else:
-                                cell.reveal()
+                        else:
+                            cell.reveal()
             
 class NumCell(Cell):
     def __init__(self):
@@ -153,7 +155,6 @@ class BombCell(Cell):
                     self.total_grid[bomb[0]][bomb[1]].reveal()
             for marked in marked_cells:
                 marked_cell = self.total_grid[marked[0]][marked[1]]
-                if isinstance(marked_cell, BombCell):
-                    marked_cell.config(image=self.bad_mark)
-
+                if isinstance(marked_cell, NumCell):
+                    marked_cell.button.config(image=self.bad_mark)
 
