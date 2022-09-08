@@ -39,7 +39,7 @@ def generate(frame, flag_image, bad_mark, bomb_image, red_bomb):
         for c in range(COLUMNS):
             if (r, c) in BOMB_COORDS:
                 new_bomb_cell = button_types.BombCell(total_grid, flag_image, bad_mark, bomb_image, red_bomb)
-                new_bomb_cell.create_button(frame, r, c, BOMB_COORDS, total_grid)
+                new_bomb_cell.create_button(frame, r, c, BOMB_COORDS)
                 total_grid[r][c] = new_bomb_cell
             else:
                 new_num_cell = button_types.NumCell(total_grid, flag_image, bad_mark)    
@@ -49,7 +49,7 @@ def generate(frame, flag_image, bad_mark, bomb_image, red_bomb):
     for r in range(ROWS):
         for c in range(COLUMNS):
             current_cell = total_grid[r][c]
-            current_cell.get_adjacent(total_grid)
+            current_cell.get_adjacent()
             if isinstance(current_cell, button_types.NumCell):
                 current_cell.get_num_bombs()
 

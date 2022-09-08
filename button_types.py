@@ -33,14 +33,14 @@ class Cell:
         self.button.config(image='')
         self.button.config(image=HIDDEN_TEXT)
 
-    def get_adjacent(self, total_grid):
-        rows = len(total_grid)
-        cols = len(total_grid[0])
+    def get_adjacent(self):
+        rows = len(self.total_grid)
+        cols = len(self.total_grid[0])
         for adjacent_cell in ADJACENT_CELLS:
             xpos = self.xpos + adjacent_cell[0]
             ypos = self.ypos + adjacent_cell[1]
             if (xpos >= 0 and xpos < rows) and (ypos >= 0 and ypos < cols):
-                self.adjacent_cells.append(total_grid[xpos][ypos])
+                self.adjacent_cells.append(self.total_grid[xpos][ypos])
         return self.adjacent_cells
 
     def get_marked(self):
@@ -122,7 +122,6 @@ class BombCell(Cell):
     def __init__(self, total_grid, flag_image, bad_mark, bomb_image, red_bomb):
         super().__init__(total_grid, flag_image, bad_mark)
         self.all_bombs = set()
-        self.total_grid = None
         self.bomb_image = bomb_image
         self.red_bomb = red_bomb
 
@@ -130,7 +129,7 @@ class BombCell(Cell):
         self.hidden = False
         self.button.config(text=None, image=self.bomb_image)
     
-    def create_button(self, frame, xpos, ypos, all_bombs, total_grid):
+    def create_button(self, frame, xpos, ypos, all_bombs):
         self.button = Button(frame, text=HIDDEN_TEXT, image='', \
             command=self.left_click)
         self.button.bind("<Button-3>", self.right_click)
@@ -138,7 +137,6 @@ class BombCell(Cell):
         self.xpos = xpos
         self.ypos = ypos
         self.all_bombs = all_bombs
-        self.total_grid = total_grid
 
     def left_click(self):
         if not self.marked:
