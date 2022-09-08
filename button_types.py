@@ -11,31 +11,27 @@ IMAGE_SIZE = 18
 BUTTON_SIZE = 2
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
     (-1, 0), (0, -1), (1, -1), (-1, 1)]
+HIDDEN_TEXT = '   '
 marked_cells = []
 
 
 class Cell:
-    def __init__(self):
-        self.flag_image = Image.open('resources/flag.png').resize\
-            ((IMAGE_SIZE, IMAGE_SIZE))
-        self.flag_image = ImageTk.PhotoImage(self.flag_image)
-        self.bad_mark = Image.open('resources/bad_mark.png').resize\
-            ((IMAGE_SIZE, IMAGE_SIZE))
-        self.bad_mark = ImageTk.PhotoImage(self.bad_mark)
-        
+    def __init__(self, total_grid, flag_image, bad_mark):
         self.marked = False
         self.hidden = True
-        self.hidden_text = '   '
         self.button = None
-        self.to_display = self.hidden_text
         self.xpos = None
         self.ypos = None
         self.adjacent_cells = []
         self.button_frame = None
+        self.total_grid = total_grid
+        self.bad_mark = bad_mark
+        self.flag_image = flag_image
     
     def hide(self):
         self.hidden = True
-        self.to_display = self.hidden_text
+        self.button.config(image='')
+        self.button.config(image=HIDDEN_TEXT)
 
     def get_adjacent(self, total_grid):
         rows = len(total_grid)
@@ -56,20 +52,23 @@ class Cell:
     def toggle_mark(self):
         if not self.marked:
                 self.marked = True
-                self.to_display = self.flag_image
-                self.button.config(text=self.hidden_text, image=self.to_display, width=IMAGE_SIZE)
+                self.button.config(text=HIDDEN_TEXT, image=self.flag_image, width=IMAGE_SIZE)
                 marked_cells.append((self.xpos, self.ypos))
         else:
             self.marked = False
-            self.to_display = self.hidden_text
-            self.button.config(text=self.to_display, image='', width=BUTTON_SIZE)
+            self.button.config(text=HIDDEN_TEXT, image='', width=BUTTON_SIZE)
             marked_cells.remove((self.xpos, self.ypos))
+
+    def toggle_bad_mark(self):
+        if self.marked:
+            self.marked = False
+            self.button.config(text=HIDDEN_TEXT, image=self.bad_mark, width=IMAGE_SIZE)
 
     def right_click(self, event):
         if self.hidden:
             self.toggle_mark()
         else:
-            if self.num_bombs == self.get_num_marked():
+            if isinstance(self, NumCell) and self.num_bombs == self.get_num_marked():
                 for cell in self.adjacent_cells:
                     if not cell.get_marked():
                         if isinstance(self, NumCell):
@@ -77,18 +76,21 @@ class Cell:
                                 cell.left_click()
                         else:
                             cell.reveal()
-            
+
+    def clear_marked():
+        marked_cells = []
+
 class NumCell(Cell):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, total_grid, flag_image, bad_mark):
+        super().__init__(total_grid, flag_image, bad_mark)
         self.adjacent = 0
         self.num_bombs = 0
 
     def reveal(self):
         if self.hidden:
             self.hidden = False
-            self.to_display = self.num_bombs
-            self.button.config(text=self.to_display)
+            self.button.config(image='')
+            self.button.config(text=self.num_bombs)
     
     def get_num_bombs(self):
         self.num_bombs = len(list(filter(lambda x: \
@@ -98,7 +100,7 @@ class NumCell(Cell):
     def create_button(self, frame, xpos, ypos):
         #self.button_frame = Frame(frame)
         #self.button_frame.grid(row=xpos, column=ypos)
-        self.button = Button(frame, text=self.to_display, \
+        self.button = Button(frame, text=HIDDEN_TEXT, image='', \
             command=self.left_click, width=BUTTON_SIZE)
         self.button.bind("<Button-3>", self.right_click)
         self.button.grid(row=xpos, column=ypos)
@@ -117,24 +119,19 @@ class NumCell(Cell):
                     self.reveal()
             
 class BombCell(Cell):
-    def __init__(self):
-        super().__init__()
-        self.bomb_image = Image.open('resources/bomb.png').resize\
-            ((IMAGE_SIZE, IMAGE_SIZE))
-        self.bomb_image = ImageTk.PhotoImage(self.bomb_image)
-        self.red_bomb = Image.open('resources/red_bomb.png').resize\
-            ((IMAGE_SIZE, IMAGE_SIZE))
-        self.red_bomb = ImageTk.PhotoImage(self.red_bomb)
+    def __init__(self, total_grid, flag_image, bad_mark, bomb_image, red_bomb):
+        super().__init__(total_grid, flag_image, bad_mark)
         self.all_bombs = set()
         self.total_grid = None
+        self.bomb_image = bomb_image
+        self.red_bomb = red_bomb
 
     def reveal(self):
         self.hidden = False
-        self.to_display=self.bomb_image
-        self.button.config(text=None, image=self.to_display)
+        self.button.config(text=None, image=self.bomb_image)
     
     def create_button(self, frame, xpos, ypos, all_bombs, total_grid):
-        self.button = Button(frame, text=self.to_display, \
+        self.button = Button(frame, text=HIDDEN_TEXT, image='', \
             command=self.left_click)
         self.button.bind("<Button-3>", self.right_click)
         self.button.grid(row=xpos, column=ypos, sticky="nsew")
@@ -153,5 +150,6 @@ class BombCell(Cell):
             for marked in marked_cells:
                 marked_cell = self.total_grid[marked[0]][marked[1]]
                 if isinstance(marked_cell, NumCell):
-                    marked_cell.button.config(image=self.bad_mark)
+                    marked_cell.toggle_bad_mark()
+        marked = []
 
