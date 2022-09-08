@@ -32,21 +32,19 @@ class Cell:
         self.ypos = None
         self.adjacent_cells = []
         self.button_frame = None
-
     
     def hide(self):
         self.hidden = True
         self.to_display = self.hidden_text
 
     def get_adjacent(self, total_grid):
+        rows = len(total_grid)
+        cols = len(total_grid[0])
         for adjacent_cell in ADJACENT_CELLS:
-            try:
-                single_cell = total_grid[self.xpos + adjacent_cell[0]]\
-                    [self.ypos + adjacent_cell[1]]
-                if isinstance(single_cell, Cell):
-                    self.adjacent_cells.append(single_cell)
-            except:
-                pass
+            xpos = self.xpos + adjacent_cell[0]
+            ypos = self.ypos + adjacent_cell[1]
+            if (xpos >= 0 and xpos < rows) and (ypos >= 0 and ypos < cols):
+                self.adjacent_cells.append(total_grid[xpos][ypos])
         return self.adjacent_cells
 
     def get_marked(self):
@@ -129,7 +127,6 @@ class BombCell(Cell):
         self.red_bomb = ImageTk.PhotoImage(self.red_bomb)
         self.all_bombs = set()
         self.total_grid = None
-        
 
     def reveal(self):
         self.hidden = False

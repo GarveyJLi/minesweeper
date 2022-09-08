@@ -7,7 +7,12 @@ from numpy import random
 
 COLUMNS = 30
 ROWS = 20
-NUM_BOMBS = 100
+DIFFICULTIES = {
+    'Easy': 0.1,
+    'Medium': 0.2,
+    'Hard': 0.3
+}
+NUM_BOMBS = COLUMNS * ROWS * DIFFICULTIES['Medium']
 BOMB_COORDS = set()
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1)]
 BUTTON_SIZE = 20
