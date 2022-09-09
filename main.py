@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 import button_types
 from numpy import random
+import time
 
 #status bar at top showing num bombs and timer and reset button
 
@@ -24,11 +25,11 @@ total_grid = []
 def random_num(upper):
     return random.randint(upper)
 
-def generate(frame, flag_image, bad_mark, bomb_image, red_bomb): 
+def generate(frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb): 
     #rewrite so image generation is in generate function. maybe change get_adjacent to occur only when clicked.
     #make total_grid an instance variable/attribute
     total_grid = [[None for c in range(COLUMNS)] for r in range(ROWS)]
-    button_types.Cell.clear_marked()
+    button_types.reset()
 
     BOMB_COORDS.clear()
     while len(BOMB_COORDS) < NUM_BOMBS:
@@ -43,7 +44,7 @@ def generate(frame, flag_image, bad_mark, bomb_image, red_bomb):
                 total_grid[r][c] = new_bomb_cell
             else:
                 new_num_cell = button_types.NumCell(total_grid, flag_image, bad_mark)    
-                new_num_cell.create_button(frame, r, c)
+                new_num_cell.create_button(frame, r, c, BOMB_COORDS)
                 total_grid[r][c] = new_num_cell
 
     for r in range(ROWS):
@@ -52,6 +53,15 @@ def generate(frame, flag_image, bad_mark, bomb_image, red_bomb):
             current_cell.get_adjacent()
             if isinstance(current_cell, button_types.NumCell):
                 current_cell.get_num_bombs()
+    
+    button_types.Cell.create_bomb_counter(top_frame)
+
+
+
+
+def timer_control():
+    if button_types.timer_start_end():
+        timer = time.time()
 
 def main():
     root=Tk()
@@ -69,6 +79,7 @@ def main():
     red_bomb = Image.open('resources/red_bomb.png').resize\
         ((IMAGE_SIZE, IMAGE_SIZE))
     red_bomb = ImageTk.PhotoImage(red_bomb)
+    timer_control()
 
     top_frame = Frame(root)
     top_frame.grid(row=0, column=0)
@@ -76,13 +87,14 @@ def main():
     cell_frame = Frame(root)
     cell_frame.grid(row=1, column=0)
 
+    generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb)
+    
     smiley_image = Image.open('resources/smiley.jpg').resize((BUTTON_SIZE, BUTTON_SIZE))
     smiley_image = ImageTk.PhotoImage(smiley_image)
-    new_game_button = Button(top_frame, image=smiley_image, height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: generate(cell_frame, flag_image, bad_mark, bomb_image, red_bomb))
-    new_game_button.grid(row=0, column=0)
+    new_game_button = Button(top_frame, image=smiley_image, height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb))
+    new_game_button.grid(row=0, column=1)
 
-    generate(cell_frame, flag_image, bad_mark, bomb_image, red_bomb)
-
+    
     root.mainloop()
 
 main()

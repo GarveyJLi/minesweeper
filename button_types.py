@@ -6,16 +6,30 @@ from numpy import random
 #types of buttons: blank, num, and bomb, reset button
 #types of button images: blank, num, bomb, flag, clicked blank, wrong flag, exploded bomb, uncovered
 
-
 IMAGE_SIZE = 18
 BUTTON_SIZE = 2
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
     (-1, 0), (0, -1), (1, -1), (-1, 1)]
 HIDDEN_TEXT = '   '
-marked_cells = []
+game_start = False
+game_end = False
+game_win = None
 
+def timer_start_end():
+    if game_start and not game_end:
+        return True
+    return False
+
+def reset():
+    game_start = False
+    game_end = False
+    game_win = None
+    Cell.clear_marked()
 
 class Cell:
+    bomb_counter = None
+    num_bombs = None
+    marked_cells = []
     def __init__(self, total_grid, flag_image, bad_mark):
         self.marked = False
         self.hidden = True
@@ -27,11 +41,6 @@ class Cell:
         self.total_grid = total_grid
         self.bad_mark = bad_mark
         self.flag_image = flag_image
-    
-    def hide(self):
-        self.hidden = True
-        self.button.config(image='')
-        self.button.config(image=HIDDEN_TEXT)
 
     def get_adjacent(self):
         rows = len(self.total_grid)
@@ -53,11 +62,11 @@ class Cell:
         if not self.marked:
                 self.marked = True
                 self.button.config(text=HIDDEN_TEXT, image=self.flag_image, width=IMAGE_SIZE)
-                marked_cells.append((self.xpos, self.ypos))
+                Cell.marked_cells.append((self.xpos, self.ypos))
         else:
             self.marked = False
             self.button.config(text=HIDDEN_TEXT, image='', width=BUTTON_SIZE)
-            marked_cells.remove((self.xpos, self.ypos))
+            Cell.marked_cells.remove((self.xpos, self.ypos))
 
     def toggle_bad_mark(self):
         if self.marked:
@@ -67,6 +76,7 @@ class Cell:
     def right_click(self, event):
         if self.hidden:
             self.toggle_mark()
+            Cell.bomb_counter.config(text=(Cell.num_bombs - len(Cell.marked_cells)))
         else:
             if isinstance(self, NumCell) and self.num_bombs == self.get_num_marked():
                 for cell in self.adjacent_cells:
@@ -78,7 +88,12 @@ class Cell:
                             cell.reveal()
 
     def clear_marked():
-        marked_cells = []
+        Cell.marked_cells = []
+
+    @staticmethod
+    def create_bomb_counter(frame):
+        Cell.bomb_counter = Label(frame, text=(Cell.num_bombs - len(Cell.marked_cells)))
+        Cell.bomb_counter.grid(row=0, column=0)
 
 class NumCell(Cell):
     def __init__(self, total_grid, flag_image, bad_mark):
@@ -97,7 +112,7 @@ class NumCell(Cell):
             isinstance(x, BombCell), self.adjacent_cells)))
         return self.num_bombs
 
-    def create_button(self, frame, xpos, ypos):
+    def create_button(self, frame, xpos, ypos, all_bombs):
         #self.button_frame = Frame(frame)
         #self.button_frame.grid(row=xpos, column=ypos)
         self.button = Button(frame, text=HIDDEN_TEXT, image='', \
@@ -106,8 +121,10 @@ class NumCell(Cell):
         self.button.grid(row=xpos, column=ypos)
         self.xpos = xpos
         self.ypos = ypos
+        self.all_bombs = all_bombs
 
     def left_click(self):
+        game_start = True
         if not self.marked:
             if self.hidden:
                 if self.num_bombs == 0:
@@ -117,6 +134,10 @@ class NumCell(Cell):
                             cell.left_click()
                 else:
                     self.reveal()
+        if len(Cell.marked_cells) == len(self.all_bombs):
+            game_end = True
+            game_win = True
+
             
 class BombCell(Cell):
     def __init__(self, total_grid, flag_image, bad_mark, bomb_image, red_bomb):
@@ -137,17 +158,19 @@ class BombCell(Cell):
         self.xpos = xpos
         self.ypos = ypos
         self.all_bombs = all_bombs
+        Cell.num_bombs = len(all_bombs)
 
     def left_click(self):
+        game_start = False
         if not self.marked:
             self.hidden = False
             self.button.config(image=self.red_bomb)
             for bomb in self.all_bombs:
                 if bomb != (self.xpos, self.ypos):
                     self.total_grid[bomb[0]][bomb[1]].reveal()
-            for marked in marked_cells:
+            for marked in Cell.marked_cells:
                 marked_cell = self.total_grid[marked[0]][marked[1]]
                 if isinstance(marked_cell, NumCell):
                     marked_cell.toggle_bad_mark()
+            game_win = False
         marked = []
-
