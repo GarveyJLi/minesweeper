@@ -78,14 +78,16 @@ class Cell:
             self.toggle_mark()
             Cell.bomb_counter.config(text=(Cell.num_bombs - len(Cell.marked_cells)))
         else:
-            if isinstance(self, NumCell) and self.num_bombs == self.get_num_marked():
+            if isinstance(self, NumCell) and (self.num_bombs == self.get_num_marked()):
                 for cell in self.adjacent_cells:
                     if not cell.get_marked():
-                        if isinstance(self, NumCell):
+                        if isinstance(cell, NumCell):
                             if cell.get_num_bombs() == 0:
                                 cell.left_click()
+                            else:
+                                cell.reveal()
                         else:
-                            cell.reveal()
+                            cell.left_click()
 
     def clear_marked():
         Cell.marked_cells = []
