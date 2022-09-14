@@ -13,7 +13,8 @@ DIFFICULTIES = {
     'Medium': 0.2,
     'Hard': 0.3
 }
-NUM_BOMBS = COLUMNS * ROWS * DIFFICULTIES['Medium']
+NUM_NUMS = COLUMNS * ROWS
+NUM_BOMBS = NUM_NUMS * DIFFICULTIES['Easy']
 BOMB_COORDS = set()
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1)]
 BUTTON_SIZE = 20
@@ -39,11 +40,11 @@ def generate(frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb):
     for r in range(ROWS):
         for c in range(COLUMNS):
             if (r, c) in BOMB_COORDS:
-                new_bomb_cell = button_types.BombCell(total_grid, flag_image, bad_mark, bomb_image, red_bomb)
+                new_bomb_cell = button_types.BombCell(total_grid, NUM_NUMS, flag_image, bad_mark, bomb_image, red_bomb)
                 new_bomb_cell.create_button(frame, r, c, BOMB_COORDS)
                 total_grid[r][c] = new_bomb_cell
             else:
-                new_num_cell = button_types.NumCell(total_grid, flag_image, bad_mark)    
+                new_num_cell = button_types.NumCell(total_grid, NUM_NUMS, flag_image, bad_mark)    
                 new_num_cell.create_button(frame, r, c, BOMB_COORDS)
                 total_grid[r][c] = new_num_cell
 
