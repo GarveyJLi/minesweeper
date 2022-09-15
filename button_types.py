@@ -100,12 +100,14 @@ class Cell:
     @staticmethod
     def game_win():
         Cell.clickable = False
-        return
+        Cell.game_end = True
+        Cell.game_win = True
 
     @staticmethod
     def game_lose():
         Cell.clickable = False
-        return 
+        Cell.game_end = True
+        Cell.game_win = False
 
     @staticmethod
     def create_bomb_counter(frame):

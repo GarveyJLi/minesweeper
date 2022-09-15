@@ -95,7 +95,6 @@ def main():
     new_game_button = Button(top_frame, image=smiley_image, height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb))
     new_game_button.grid(row=0, column=1)
 
-    
     root.mainloop()
 
 main()
