@@ -161,7 +161,7 @@ class NumCell(Cell):
 
             
 class BombCell(Cell):
-    def __init__(self, total_grid, flag_image, num_nums, bad_mark, bomb_image, red_bomb):
+    def __init__(self, total_grid, num_nums, flag_image, bad_mark, bomb_image, red_bomb):
         super().__init__(total_grid, num_nums, flag_image, bad_mark)
         self.all_bombs = set()
         self.bomb_image = bomb_image
