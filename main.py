@@ -3,53 +3,49 @@ from PIL import ImageTk, Image
 import button_types
 from numpy import random
 import time
+import sqlite3
 
-#status bar at top showing num bombs and timer and reset button
-
-COLUMNS = 30
-ROWS = 20
 DIFFICULTIES = {
     'Easy': 0.1,
     'Medium': 0.2,
     'Hard': 0.3
 }
-NUM_NUMS = COLUMNS * ROWS
-NUM_BOMBS = NUM_NUMS * DIFFICULTIES['Easy']
-BOMB_COORDS = set()
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1)]
 BUTTON_SIZE = 20
 IMAGE_SIZE = 18
-
 
 total_grid = []
 
 def random_num(upper):
     return random.randint(upper)
 
-def generate(frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb): 
+def generate(frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb, \
+    rows, columns, bomb_coords, num_bombs, num_nums): 
     #rewrite so image generation is in generate function. maybe change get_adjacent to occur only when clicked.
     #make total_grid an instance variable/attribute
-    total_grid = [[None for c in range(COLUMNS)] for r in range(ROWS)]
+    total_grid = [[None for c in range(columns)] for r in range(rows)]
     button_types.reset()
 
-    BOMB_COORDS.clear()
-    while len(BOMB_COORDS) < NUM_BOMBS:
-        coord = (random_num(ROWS), random_num(COLUMNS))
-        BOMB_COORDS.add(coord)
+    bomb_coords.clear()
+    while len(bomb_coords) < num_bombs:
+        coord = (random_num(rows), random_num(columns))
+        bomb_coords.add(coord)
 
-    for r in range(ROWS):
-        for c in range(COLUMNS):
-            if (r, c) in BOMB_COORDS:
-                new_bomb_cell = button_types.BombCell(total_grid, NUM_NUMS, flag_image, bad_mark, bomb_image, red_bomb)
-                new_bomb_cell.create_button(frame, r, c, BOMB_COORDS)
+    for r in range(rows):
+        for c in range(columns):
+            if (r, c) in bomb_coords:
+                new_bomb_cell = button_types.BombCell(total_grid, num_nums, \
+                    flag_image, bad_mark, bomb_image, red_bomb)
+                new_bomb_cell.create_button(frame, r, c, bomb_coords)
                 total_grid[r][c] = new_bomb_cell
             else:
-                new_num_cell = button_types.NumCell(total_grid, NUM_NUMS, flag_image, bad_mark)    
-                new_num_cell.create_button(frame, r, c, BOMB_COORDS)
+                new_num_cell = button_types.NumCell(total_grid, num_nums, \
+                    flag_image, bad_mark)    
+                new_num_cell.create_button(frame, r, c, bomb_coords)
                 total_grid[r][c] = new_num_cell
 
-    for r in range(ROWS):
-        for c in range(COLUMNS):
+    for r in range(rows):
+        for c in range(columns):
             current_cell = total_grid[r][c]
             current_cell.get_adjacent()
             if isinstance(current_cell, button_types.NumCell):
@@ -57,16 +53,30 @@ def generate(frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb):
     
     button_types.Cell.create_bomb_counter(top_frame)
 
+def difficulty_select(frame):
+    var = StringVar()
+    var.set("Easy")
 
+    options = OptionMenu(frame, var, "Easy", "Medium", "Hard")
+    options.grid(row=0, column=0)
 
-
-def timer_control():
-    if button_types.timer_start_end():
-        timer = time.time()
 
 def main():
     root=Tk()
     root.resizable(height=None, width=None)
+
+    columns = 30
+    rows = 20
+
+    difficulty_var = StringVar()
+    difficulty_var.set("Easy")
+
+    num_nums = columns * rows
+    num_bombs = num_nums * DIFFICULTIES[difficulty_var.get()]
+
+    num_nums = columns * rows
+    num_bombs = num_nums * DIFFICULTIES[difficulty_var.get()]
+    bomb_coords = set()
 
     flag_image = Image.open('resources/flag.png').resize\
         ((IMAGE_SIZE, IMAGE_SIZE))
@@ -80,20 +90,31 @@ def main():
     red_bomb = Image.open('resources/red_bomb.png').resize\
         ((IMAGE_SIZE, IMAGE_SIZE))
     red_bomb = ImageTk.PhotoImage(red_bomb)
-    timer_control()
-
     top_frame = Frame(root)
     top_frame.grid(row=0, column=0)
 
     cell_frame = Frame(root)
     cell_frame.grid(row=1, column=0)
 
-    generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb)
+    bottom_frame = Frame(root)
+    bottom_frame.grid(row=2, column=0)
+
+    difficulty_select(bottom_frame)
+
+    generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, \
+        red_bomb, rows, columns, bomb_coords, num_bombs, num_nums)
     
-    smiley_image = Image.open('resources/smiley.jpg').resize((BUTTON_SIZE, BUTTON_SIZE))
+    smiley_image = Image.open('resources/smiley.jpg').resize((BUTTON_SIZE, \
+        BUTTON_SIZE))
     smiley_image = ImageTk.PhotoImage(smiley_image)
-    new_game_button = Button(top_frame, image=smiley_image, height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: generate(cell_frame, top_frame, flag_image, bad_mark, bomb_image, red_bomb))
+    new_game_button = Button(top_frame, image=smiley_image, \
+        height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: \
+            generate(cell_frame, top_frame, flag_image, bad_mark, \
+                bomb_image, red_bomb, rows, columns, bomb_coords, \
+                    num_bombs, num_nums))
     new_game_button.grid(row=0, column=1)
+
+
 
     root.mainloop()
 
