@@ -1,7 +1,7 @@
 from tkinter import *
 from turtle import width
 from PIL import ImageTk, Image
-from numpy import random
+
 
 #types of buttons: blank, num, and bomb, reset button
 #types of button images: blank, num, bomb, flag, clicked blank, wrong flag, exploded bomb, uncovered
@@ -21,11 +21,19 @@ def reset():
     Cell.num_clicked = 0
     Cell.game_start = False
     Cell.game_end = False
-    Cell.game_win = None
+    Cell.game_won = None
     Cell.marked_cells = []
     Cell.clickable = True
+    Cell.reset_button.config(image=Cell.smiley_image)
 
 class Cell:
+    flag_image = None
+    bad_mark = None
+    bomb_image = None
+    red_bomb = None
+    smiley_image = None
+    win_image = None
+    lose_image = None
     bomb_counter = None
     num_bombs = 0
     marked_cells = []
@@ -34,11 +42,11 @@ class Cell:
     clickable = True
     game_start = False
     game_end = False
-    game_win = None
+    game_won = None
     reset_button = None
     all_bombs = None
 
-    def __init__(self, total_grid, flag_image, bad_mark):
+    def __init__(self, total_grid):
         self.marked = False
         self.hidden = True
         self.button = None
@@ -47,8 +55,7 @@ class Cell:
         self.adjacent_cells = []
         self.button_frame = None
         self.total_grid = total_grid
-        self.bad_mark = bad_mark
-        self.flag_image = flag_image
+    
 
     def get_adjacent(self):
         rows = len(self.total_grid)
@@ -69,7 +76,7 @@ class Cell:
     def toggle_mark(self):
         if not self.marked:
                 self.marked = True
-                self.button.config(text=HIDDEN_TEXT, image=self.flag_image, \
+                self.button.config(text=HIDDEN_TEXT, image=Cell.flag_image, \
                     width=IMAGE_SIZE)
                 Cell.marked_cells.append((self.xpos, self.ypos))
         else:
@@ -80,7 +87,7 @@ class Cell:
     def toggle_bad_mark(self):
         if self.marked:
             self.marked = False
-            self.button.config(text=HIDDEN_TEXT, image=self.bad_mark, \
+            self.button.config(text=HIDDEN_TEXT, image=Cell.bad_mark, \
                 width=IMAGE_SIZE)
 
     def right_click(self, event):
@@ -101,23 +108,20 @@ class Cell:
                                     cell.reveal()
                             else:
                                 cell.left_click()
-                            print(Cell.num_clicked)
-
-
     @staticmethod
     def game_win():
         Cell.clickable = False
         Cell.game_end = True
-        Cell.game_win = True
-        print("win")
+        Cell.game_won = True
+        Cell.reset_button.config(image=Cell.win_image)
         return
 
     @staticmethod
     def game_lose():
         Cell.clickable = False
         Cell.game_end = True
-        Cell.game_win = False
-        print('lose')
+        Cell.game_won = False
+        Cell.reset_button.config(image=Cell.lose_image)
         return
 
     @staticmethod
@@ -127,8 +131,8 @@ class Cell:
         Cell.bomb_counter.grid(row=0, column=0)
 
 class NumCell(Cell):
-    def __init__(self, total_grid, flag_image, bad_mark):
-        super().__init__(total_grid,  flag_image, bad_mark)
+    def __init__(self, total_grid):
+        super().__init__(total_grid)
         self.adjacent = 0
         self.num_bombs = 0
 
@@ -136,7 +140,7 @@ class NumCell(Cell):
         if self.hidden:
             self.hidden = False
             self.button.config(image='')
-            self.button.config(text=self.num_bombs)
+            self.button.config(text=self.num_bombs, bg="#d7d9d8")
             Cell.num_clicked += 1
         if Cell.num_clicked + Cell.num_bombs == Cell.num_nums:
             Cell.game_win()
@@ -147,7 +151,7 @@ class NumCell(Cell):
         return self.num_bombs
 
     def create_button(self, frame, xpos, ypos):
-        self.button = Button(frame, text=HIDDEN_TEXT, image='', \
+        self.button = Button(frame, text=HIDDEN_TEXT, image='', bg="#f2f5f4", \
             command=self.left_click, width=BUTTON_SIZE)
         self.button.bind("<Button-3>", self.right_click)
         self.button.grid(row=xpos, column=ypos)
@@ -167,18 +171,16 @@ class NumCell(Cell):
                         self.reveal()
             
 class BombCell(Cell):
-    def __init__(self, total_grid, flag_image, bad_mark, \
-        bomb_image, red_bomb):
-        super().__init__(total_grid, flag_image, bad_mark)
-        self.bomb_image = bomb_image
-        self.red_bomb = red_bomb
+    def __init__(self, total_grid):
+        super().__init__(total_grid)
+       
 
     def reveal(self):
         self.hidden = False
-        self.button.config(text=None, image=self.bomb_image)
+        self.button.config(text=None, image=Cell.bomb_image)
     
     def create_button(self, frame, xpos, ypos):
-        self.button = Button(frame, text=HIDDEN_TEXT, image='', \
+        self.button = Button(frame, text=HIDDEN_TEXT, image='', bg="#f2f5f4", \
             command=self.left_click)
         self.button.bind("<Button-3>", self.right_click)
         self.button.grid(row=xpos, column=ypos, sticky="nsew")
@@ -189,7 +191,7 @@ class BombCell(Cell):
         if Cell.clickable:
             if not self.marked:
                 self.hidden = False
-                self.button.config(image=self.red_bomb)
+                self.button.config(image=Cell.red_bomb)
                 for bomb in Cell.all_bombs:
                     if bomb != (self.xpos, self.ypos):
                         self.total_grid[bomb[0]][bomb[1]].reveal()
