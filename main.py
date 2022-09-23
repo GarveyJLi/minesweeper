@@ -6,8 +6,8 @@ import sqlite3
 
 DIFFICULTIES = {
     'Easy': 0.1,
-    'Medium': 0.2,
-    'Hard': 0.3
+    'Medium': 0.15,
+    'Hard': 0.2
 }
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), (-1, 0), (0, -1), \
     (1, -1), (-1, 1)]
@@ -52,7 +52,6 @@ def generate(frame, top_frame, \
 def difficulty_select(frame, difficulty_var):
     options = OptionMenu(frame, difficulty_var, "Easy", "Medium", "Hard")
     options.grid(row=0, column=0)
-
 
 def main():
     root=Tk()
@@ -108,12 +107,10 @@ def main():
             generate(cell_frame, top_frame, rows, columns, bomb_coords, \
                 num_nums, total_grid, difficulty_var)) 
     new_game_button.grid(row=0, column=1)
-
     button_types.Cell.reset_button = new_game_button
 
     generate(cell_frame, top_frame, rows, columns, bomb_coords, num_nums, \
             total_grid, difficulty_var)
-
     difficulty_select(bottom_frame, difficulty_var)
 
     root.mainloop()

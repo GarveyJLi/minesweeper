@@ -2,10 +2,6 @@ from tkinter import *
 from turtle import width
 from PIL import ImageTk, Image
 
-
-#types of buttons: blank, num, and bomb, reset button
-#types of button images: blank, num, bomb, flag, clicked blank, wrong flag, exploded bomb, uncovered
-
 IMAGE_SIZE = 18
 BUTTON_SIZE = 2
 ADJACENT_CELLS = [(0, 1), (1, 0), (1, 1), (-1, -1), \
@@ -114,7 +110,6 @@ class Cell:
         Cell.game_end = True
         Cell.game_won = True
         Cell.reset_button.config(image=Cell.win_image)
-        return
 
     @staticmethod
     def game_lose():
@@ -122,7 +117,6 @@ class Cell:
         Cell.game_end = True
         Cell.game_won = False
         Cell.reset_button.config(image=Cell.lose_image)
-        return
 
     @staticmethod
     def create_bomb_counter(frame):
@@ -140,7 +134,10 @@ class NumCell(Cell):
         if self.hidden:
             self.hidden = False
             self.button.config(image='')
-            self.button.config(text=self.num_bombs, bg="#d7d9d8")
+            if (self.num_bombs != 0):
+                self.button.config(text=self.num_bombs, bg="#d7d9d8")
+            else:
+                self.button.config(bg="#d7d9d8")
             Cell.num_clicked += 1
         if Cell.num_clicked + Cell.num_bombs == Cell.num_nums:
             Cell.game_win()
@@ -173,7 +170,6 @@ class NumCell(Cell):
 class BombCell(Cell):
     def __init__(self, total_grid):
         super().__init__(total_grid)
-       
 
     def reveal(self):
         self.hidden = False
@@ -200,5 +196,3 @@ class BombCell(Cell):
                     if isinstance(marked_cell, NumCell):
                         marked_cell.toggle_bad_mark()
                 Cell.game_lose()
-
-
