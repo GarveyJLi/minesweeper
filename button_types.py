@@ -22,6 +22,7 @@ def reset():
     Cell.clickable = True
     Cell.reset_button.config(image=Cell.smiley_image)
 
+
 class Cell:
     flag_image = None
     bad_mark = None
@@ -41,6 +42,7 @@ class Cell:
     game_won = None
     reset_button = None
     all_bombs = None
+    cursor = None
 
     def __init__(self, total_grid):
         self.marked = False

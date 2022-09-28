@@ -49,19 +49,44 @@ def generate(frame, top_frame, \
                 current_cell.get_num_bombs()
     button_types.Cell.create_bomb_counter(top_frame)
 
-def difficulty_select(frame, difficulty_var):
+"""def difficulty_select(frame, difficulty_var, grid_x, grid_y):
     options = OptionMenu(frame, difficulty_var, "Easy", "Medium", "Hard")
-    options.grid(row=0, column=0)
+    options.grid(row=grid_x, column=grid_y)"""
+
+def user_select(frame, user_var, grid_x, grid_y):
+    users = OptionMenu(frame, user_var, "Guest", "New Player")
+    users.grid(row=grid_x, column=grid_y)
+
+def submit():
+    return
 
 def main():
     root=Tk()
     root.resizable(height=None, width=None)
 
-    columns = 30
-    rows = 20
+    root.title('Minesweeper')
+    root.iconbitmap('resources/mine.ico')
+
+    conn = sqlite3.connect('player_records.db')
+    cur = conn.cursor()
+
+    '''
+    cur.execute("""CREATE TABLE records (
+        username text,
+        games_won integer,
+        games_lost integer,
+    )""")
+    '''
+
+    rows_var = IntVar()
+    rows_var.set(10)
+    cols_var = IntVar()
+    cols_var.set(20)
     difficulty_var = StringVar()
     difficulty_var.set("Easy")
-    num_nums = columns * rows
+    user_var = StringVar()
+    user_var.set("Guest")
+    num_nums = rows_var.get() * cols_var.get()
     bomb_coords = set()
     total_grid = []
     
@@ -94,6 +119,7 @@ def main():
     button_types.Cell.smiley_image = smiley_image
     button_types.Cell.win_image = win_image
     button_types.Cell.lose_image = lose_image
+    button_types.Cell.cursor = cur
 
     top_frame = Frame(root)
     top_frame.grid(row=0, column=0)
@@ -104,14 +130,36 @@ def main():
 
     new_game_button = Button(top_frame, image=smiley_image, \
         height=BUTTON_SIZE, width=BUTTON_SIZE, command=lambda: \
-            generate(cell_frame, top_frame, rows, columns, bomb_coords, \
+            generate(cell_frame, top_frame, rows_var.get(), cols_var.get(), bomb_coords, \
                 num_nums, total_grid, difficulty_var)) 
     new_game_button.grid(row=0, column=1)
     button_types.Cell.reset_button = new_game_button
 
-    generate(cell_frame, top_frame, rows, columns, bomb_coords, num_nums, \
+    generate(cell_frame, top_frame, rows_var.get(), cols_var.get(), bomb_coords, num_nums, \
             total_grid, difficulty_var)
-    difficulty_select(bottom_frame, difficulty_var)
+    
+
+    row_settings = Entry(bottom_frame)
+    row_settings.grid(row=0, column=0)
+    col_settings = Entry(bottom_frame)
+    col_settings.grid(row=0, column=1)
+    difficulty_options = OptionMenu(bottom_frame, difficulty_var, "Easy", "Medium", "Hard")
+    difficulty_options.grid(row=0, column=3)
+    difficulty_select_button = Button(bottom_frame, text="Select", \
+        command=lambda:generate(cell_frame, top_frame, rows_var.get(), \
+            cols_var.get(), bomb_coords, num_nums, total_grid, \
+                difficulty_var))
+    difficulty_select_button.grid(row=0, column=4)
+
+    """user_select(bottom_frame, user_var, 0, 1)
+    user_select_button = Button(bottom_frame, text="Select", \
+        command=lambda:submit())
+    user_select_button.grid(row=0, column=2)"""
+
+
+
+    conn.commit()
+    conn.close()
 
     root.mainloop()
     
